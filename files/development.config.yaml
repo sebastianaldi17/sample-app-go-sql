@@ -1,0 +1,5 @@
+database:
+  user: "root"
+  password: "root"
+  host: "postgres"
+  database_name: "sample-app"
