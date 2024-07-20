@@ -23,7 +23,7 @@ jobs:
       run: go test -v ./...
 
     - name: Build
-      run: go build 
+      run: go build ./...
 
     - name: Create Release
       uses: softprops/action-gh-release@v2
