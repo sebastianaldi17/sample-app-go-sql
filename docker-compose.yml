@@ -11,3 +11,12 @@ services:
     volumes:
       - ./dbscripts:/docker-entrypoint-initdb.d
       - ./postgres-data:/var/lib/postgresql/data
+  backend:
+    build:
+      context: ./backend
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend:/go-server
+    ports:
+      - 3000:3000
