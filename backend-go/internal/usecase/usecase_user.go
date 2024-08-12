@@ -10,7 +10,7 @@ import (
 )
 
 func (u *Usecase) CreateAccount(req entity.Login) error {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), 14)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), 10)
 	if err != nil {
 		return err
 	}
