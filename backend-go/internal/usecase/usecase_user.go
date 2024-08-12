@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"log"
 	"strconv"
 	"time"
 
@@ -32,12 +31,10 @@ func (u *Usecase) ValidateLogin(req entity.Login) error {
 }
 
 func (u *Usecase) CreateJWT(req entity.Login) (string, error) {
-	start := time.Now()
 	err := u.ValidateLogin(req)
 	if err != nil {
 		return "", err
 	}
-	log.Println(time.Since(start).Milliseconds())
 
 	userID, err := u.repo.GetUserIDFromUsername(req.Username)
 	if err != nil {

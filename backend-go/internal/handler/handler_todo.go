@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -143,8 +142,6 @@ func (h *Handler) UpdateTodo(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Invalid ID in JWT"))
 		return
 	}
-
-	log.Println(userID)
 
 	isAuthor, err := h.uc.VerifyTodoAuthor(todoIDInt, userID)
 	if err != nil {
