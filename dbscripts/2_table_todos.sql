@@ -1,7 +1,9 @@
 CREATE TABLE IF NOT EXISTS todos (
     id SERIAL PRIMARY KEY,
+    author_id INTEGER REFERENCES users(id),
     title VARCHAR NOT NULL,
     content VARCHAR NOT NULL,
+    completed BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     last_update TIMESTAMPTZ NOT NULL DEFAULT now()
 );

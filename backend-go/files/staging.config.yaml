@@ -1,6 +1,0 @@
-# Edit inside VM
-database:
-  user: ""
-  password: ""
-  host: ""
-  database_name: ""
