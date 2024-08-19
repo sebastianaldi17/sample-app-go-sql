@@ -4,10 +4,6 @@ import (
 	"github.com/sebastianaldi17/sample-app-go-sql/internal/entity"
 )
 
-func (u *Usecase) GetTodos() ([]entity.Todo, error) {
-	return u.repo.GetTodos()
-}
-
 func (u *Usecase) GetTodoByID(id int64) (entity.Todo, error) {
 	return u.repo.GetTodoByID(id)
 }
