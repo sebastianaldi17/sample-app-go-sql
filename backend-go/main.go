@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -44,13 +45,17 @@ func main() {
 
 	r := chi.NewRouter()
 
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins: []string{"https://*", "http://*"},
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders: []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+	}))
+
 	// "public" routes
 	r.Group(func(r chi.Router) {
 		r.Get("/", handler.Hello)
 		r.Post("/user", handler.CreateAccount)
 		r.Post("/user/login", handler.LoginUser)
-		r.Get("/todo", handler.GetTodos)
-		r.Get("/todo/{todoID}", handler.GetTodoByID)
 	})
 
 	// protected routes
@@ -59,8 +64,10 @@ func main() {
 		r.Use(jwtauth.Verifier(jwtTokenAuth))
 		r.Use(jwtauth.Authenticator(jwtTokenAuth))
 
+		r.Get("/user", handler.ValidateJWT)
 		r.Post("/todo", handler.InsertTodo)
 		r.Put("/todo/{todoID}", handler.UpdateTodo)
+		r.Get("/todo/{todoID}", handler.GetTodoByID)
 		r.Delete("/todo/{todoID}", handler.DeleteTodo)
 		r.Get("/user/todo", handler.GetTodosByUser)
 	})

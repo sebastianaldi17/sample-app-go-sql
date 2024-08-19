@@ -6,26 +6,8 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/jwtauth/v5"
 	"github.com/sebastianaldi17/sample-app-go-sql/internal/entity"
 )
-
-func (h *Handler) GetTodos(w http.ResponseWriter, r *http.Request) {
-	todos, err := h.uc.GetTodos()
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		return
-	}
-	todoBytes, err := json.Marshal(todos)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(todoBytes)
-}
 
 func (h *Handler) GetTodoByID(w http.ResponseWriter, r *http.Request) {
 	todoID := chi.URLParam(r, "todoID")
@@ -36,12 +18,26 @@ func (h *Handler) GetTodoByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userID, err := getUserIDFromContext(r.Context())
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Invalid user ID in JWT"))
+		return
+	}
+
 	todo, err := h.uc.GetTodoByID(todoIDInt)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
 		return
 	}
+
+	if todo.AuthorID != userID {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte("User has no access to this todo"))
+		return
+	}
+
 	todoBytes, err := json.Marshal(todo)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -61,31 +57,10 @@ func (h *Handler) InsertTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, claims, err := jwtauth.FromContext(r.Context())
+	userID, err := getUserIDFromContext(r.Context())
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
-		return
-	}
-
-	userIDInterface, ok := claims["id"]
-	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("No ID found in JWT"))
-		return
-	}
-
-	userIDStr, ok := userIDInterface.(string)
-	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Invalid ID in JWT"))
-		return
-	}
-
-	userID, err := strconv.ParseInt(userIDStr, 10, 64)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Invalid ID in JWT"))
+		w.Write([]byte("Invalid user ID in JWT"))
 		return
 	}
 
@@ -115,31 +90,10 @@ func (h *Handler) UpdateTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, claims, err := jwtauth.FromContext(r.Context())
+	userID, err := getUserIDFromContext(r.Context())
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
-		return
-	}
-
-	userIDInterface, ok := claims["id"]
-	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("No ID found in JWT"))
-		return
-	}
-
-	userIDStr, ok := userIDInterface.(string)
-	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Invalid ID in JWT"))
-		return
-	}
-
-	userID, err := strconv.ParseInt(userIDStr, 10, 64)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Invalid ID in JWT"))
+		w.Write([]byte("Invalid user ID in JWT"))
 		return
 	}
 
@@ -175,31 +129,10 @@ func (h *Handler) DeleteTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, claims, err := jwtauth.FromContext(r.Context())
+	userID, err := getUserIDFromContext(r.Context())
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
-		return
-	}
-
-	userIDInterface, ok := claims["id"]
-	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("No ID found in JWT"))
-		return
-	}
-
-	userIDStr, ok := userIDInterface.(string)
-	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Invalid ID in JWT"))
-		return
-	}
-
-	userID, err := strconv.ParseInt(userIDStr, 10, 64)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Invalid ID in JWT"))
+		w.Write([]byte("Invalid user ID in JWT"))
 		return
 	}
 
@@ -225,31 +158,10 @@ func (h *Handler) DeleteTodo(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetTodosByUser(w http.ResponseWriter, r *http.Request) {
-	_, claims, err := jwtauth.FromContext(r.Context())
+	userID, err := getUserIDFromContext(r.Context())
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
-		return
-	}
-
-	userIDInterface, ok := claims["id"]
-	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("No ID found in JWT"))
-		return
-	}
-
-	userIDStr, ok := userIDInterface.(string)
-	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Invalid ID in JWT"))
-		return
-	}
-
-	userID, err := strconv.ParseInt(userIDStr, 10, 64)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Invalid ID in JWT"))
+		w.Write([]byte("Invalid user ID in JWT"))
 		return
 	}
 

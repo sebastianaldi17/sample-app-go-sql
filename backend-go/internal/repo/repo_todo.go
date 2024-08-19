@@ -5,18 +5,6 @@ import (
 )
 
 const (
-	queryGetTodos = `
-		SELECT
-			id,
-			author_id,
-			title,
-			content,
-			completed,
-			created_at,
-			last_update
-		FROM
-			todos
-	`
 	queryGetTodoByID = `
 		SELECT
 			id,
@@ -44,7 +32,8 @@ const (
 		FROM
 			todos
 		WHERE
-			id = $1
+			author_id = $1
+		ORDER BY id
 	`
 	queryInsertTodo = `
 		INSERT INTO	
@@ -70,12 +59,6 @@ const (
 			id = $1
 	`
 )
-
-func (r *Repo) GetTodos() ([]entity.Todo, error) {
-	todos := make([]entity.Todo, 0)
-	err := r.db.Select(&todos, queryGetTodos)
-	return todos, err
-}
 
 func (r *Repo) GetTodoByID(id int64) (entity.Todo, error) {
 	todo := make([]entity.Todo, 0)
