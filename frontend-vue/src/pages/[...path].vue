@@ -1,5 +1,8 @@
 <template>
     <!--Replace with an actual 404 not found page if needed-->
+    <div>
+        
+    </div>
 </template>
 
 <script>

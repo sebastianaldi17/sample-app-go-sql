@@ -18,7 +18,7 @@
     <v-main class="pt-2">
         <v-container>
             <v-row v-if="!isFetching">
-                <v-col cols="6" sm="4" md="3" lg="2" v-for="todo in todos">
+                <v-col cols="6" sm="4" md="3" lg="2" v-for="todo in todos" v-bind:key="todo.id">
                     <v-card :title="todo.title" :text="todo.content"
                         :subtitle="`${todo.completed ? 'done' : 'not done'}`"
                         @click="redirectEditTodo(todo.id)">
