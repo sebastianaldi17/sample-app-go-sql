@@ -1,6 +1,8 @@
 package repo
 
-import "github.com/sebastianaldi17/sample-app-go-sql/internal/entity"
+import (
+	userEntity "github.com/sebastianaldi17/sample-app-go-sql/internal/entity/user"
+)
 
 const (
 	queryGetPasswordHash = `
@@ -33,7 +35,7 @@ func (r *Repo) GetPasswordHash(username string) (string, error) {
 	return passwordHash, err
 }
 
-func (r *Repo) CreateAccount(req entity.Login) error {
+func (r *Repo) CreateAccount(req userEntity.Login) error {
 	_, err := r.db.Exec(queryInsertUser, req.Username, req.Password)
 	return err
 }

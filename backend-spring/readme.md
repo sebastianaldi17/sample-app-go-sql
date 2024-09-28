@@ -4,7 +4,7 @@ A Java Spring Boot backend.
 
 # Development
 
-This code was written in IntelliJ IDEA Community Edition
+This code was written in IntelliJ IDEA Community Edition, using Java 17.
 
 Before running it on IntelliJ, [add](https://www.jetbrains.com/help/objc/add-environment-variables-and-program-arguments.html#add-environment-variables) a few environment variables. The default values are:
 

@@ -1,18 +1,25 @@
 package usecase
 
 import (
-	"github.com/sebastianaldi17/sample-app-go-sql/internal/entity"
+	"github.com/redis/go-redis/v9"
+	todoEntity "github.com/sebastianaldi17/sample-app-go-sql/internal/entity/todo"
+	"github.com/sebastianaldi17/sample-app-go-sql/internal/pkg/logger"
 )
 
-func (u *Usecase) GetTodoByID(id int64) (entity.Todo, error) {
+func (u *Usecase) GetTodoByID(id int64) (todoEntity.Todo, error) {
 	return u.repo.GetTodoByID(id)
 }
 
-func (u *Usecase) InsertTodo(req entity.InsertTodoRequest) error {
-	return u.repo.InsertTodo(req)
+func (u *Usecase) InsertTodo(req todoEntity.InsertTodoRequest) error {
+	err := u.repo.InsertTodo(req)
+	if err != nil {
+		return err
+	}
+	u.repo.DeleteTodoByAuthorCache(req.UserID)
+	return nil
 }
 
-func (u *Usecase) UpdateTodo(req entity.UpdateTodoRequest) error {
+func (u *Usecase) UpdateTodo(req todoEntity.UpdateTodoRequest) error {
 	return u.repo.UpdateTodo(req)
 }
 
@@ -29,6 +36,23 @@ func (u *Usecase) VerifyTodoAuthor(todoID, userID int64) (bool, error) {
 	return todo.AuthorID == userID, nil
 }
 
-func (u *Usecase) GetTodoByAuthor(authorID int64) ([]entity.Todo, error) {
-	return u.repo.GetTodoByAuthor(authorID)
+func (u *Usecase) GetTodoByAuthor(authorID int64) ([]todoEntity.Todo, error) {
+	result := make([]todoEntity.Todo, 0)
+	cacheRes, err := u.repo.GetTodoByAuthorCache(authorID)
+	if err != nil {
+		if err != redis.Nil {
+			logger.Error(err.Error())
+		}
+
+		fromDb, err := u.repo.GetTodoByAuthor(authorID)
+		if err != nil {
+			return result, err
+		}
+
+		u.repo.SetTodoByAuthorCache(fromDb, authorID)
+		result = append(result, fromDb...)
+	} else {
+		result = append(result, cacheRes...)
+	}
+	return result, nil
 }
