@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/sebastianaldi17/sample-app-go-sql/internal/entity"
+	userEntity "github.com/sebastianaldi17/sample-app-go-sql/internal/entity/user"
 )
 
 func (h *Handler) CreateAccount(w http.ResponseWriter, r *http.Request) {
-	var req entity.Login
+	var req userEntity.Login
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -26,7 +26,7 @@ func (h *Handler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) LoginUser(w http.ResponseWriter, r *http.Request) {
-	var req entity.Login
+	var req userEntity.Login
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		w.WriteHeader(http.StatusBadRequest)

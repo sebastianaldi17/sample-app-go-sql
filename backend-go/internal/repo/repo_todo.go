@@ -1,7 +1,12 @@
 package repo
 
 import (
-	"github.com/sebastianaldi17/sample-app-go-sql/internal/entity"
+	"context"
+	"encoding/json"
+	"fmt"
+
+	todoEntity "github.com/sebastianaldi17/sample-app-go-sql/internal/entity/todo"
+	"github.com/sebastianaldi17/sample-app-go-sql/internal/pkg/logger"
 )
 
 const (
@@ -60,24 +65,24 @@ const (
 	`
 )
 
-func (r *Repo) GetTodoByID(id int64) (entity.Todo, error) {
-	todo := make([]entity.Todo, 0)
+func (r *Repo) GetTodoByID(id int64) (todoEntity.Todo, error) {
+	todo := make([]todoEntity.Todo, 0)
 	err := r.db.Select(&todo, queryGetTodoByID, id)
 	if err != nil {
-		return entity.Todo{}, err
+		return todoEntity.Todo{}, err
 	}
 	if len(todo) == 0 {
-		return entity.Todo{}, nil
+		return todoEntity.Todo{}, nil
 	}
 	return todo[0], nil
 }
 
-func (r *Repo) InsertTodo(req entity.InsertTodoRequest) error {
+func (r *Repo) InsertTodo(req todoEntity.InsertTodoRequest) error {
 	_, err := r.db.Exec(queryInsertTodo, req.Title, req.Content, req.UserID)
 	return err
 }
 
-func (r *Repo) UpdateTodo(req entity.UpdateTodoRequest) error {
+func (r *Repo) UpdateTodo(req todoEntity.UpdateTodoRequest) error {
 	_, err := r.db.Exec(queryUpdateTodo, req.Title, req.Content, req.Completed, req.ID)
 	return err
 }
@@ -87,8 +92,38 @@ func (r *Repo) DeleteTodo(id int64) error {
 	return err
 }
 
-func (r *Repo) GetTodoByAuthor(authorID int64) ([]entity.Todo, error) {
-	todo := make([]entity.Todo, 0)
+func (r *Repo) GetTodoByAuthor(authorID int64) ([]todoEntity.Todo, error) {
+	todo := make([]todoEntity.Todo, 0)
 	err := r.db.Select(&todo, queryGetTodoByAuthor, authorID)
 	return todo, err
+}
+
+func (r *Repo) SetTodoByAuthorCache(todos []todoEntity.Todo, authorID int64) {
+	jsonBytes, err := json.Marshal(todos)
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+	err = r.redis.SetEx(context.Background(), fmt.Sprintf(todoEntity.TodoByAuthorKeyFmt, authorID), string(jsonBytes), r.defaultTTL).Err()
+	if err != nil {
+		logger.Error(err.Error())
+	}
+}
+
+func (r *Repo) GetTodoByAuthorCache(authorID int64) ([]todoEntity.Todo, error) {
+	jsonStr, err := r.redis.Get(context.Background(), fmt.Sprintf(todoEntity.TodoByAuthorKeyFmt, authorID)).Result()
+	if err != nil {
+		return []todoEntity.Todo{}, err
+	}
+
+	results := make([]todoEntity.Todo, 0)
+	err = json.Unmarshal([]byte(jsonStr), &results)
+	return results, err
+}
+
+func (r *Repo) DeleteTodoByAuthorCache(authorID int64) {
+	err := r.redis.Del(context.Background(), fmt.Sprintf(todoEntity.TodoByAuthorKeyFmt, authorID)).Err()
+	if err != nil {
+		logger.Error(err.Error())
+	}
 }

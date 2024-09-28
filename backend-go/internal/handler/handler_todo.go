@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/sebastianaldi17/sample-app-go-sql/internal/entity"
+	todoEntity "github.com/sebastianaldi17/sample-app-go-sql/internal/entity/todo"
 )
 
 func (h *Handler) GetTodoByID(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +49,7 @@ func (h *Handler) GetTodoByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) InsertTodo(w http.ResponseWriter, r *http.Request) {
-	var req entity.InsertTodoRequest
+	var req todoEntity.InsertTodoRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -83,7 +83,7 @@ func (h *Handler) UpdateTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req entity.UpdateTodoRequest
+	var req todoEntity.UpdateTodoRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
