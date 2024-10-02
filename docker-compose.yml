@@ -30,3 +30,18 @@ services:
       - JWT_SECRET=my-secret-123
       - REDIS_ADDR=redis:6379
       - NR_LICENSE=your-newrelic-license
+  backend-ts:
+    build:
+      context: ./backend-typescript
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend-typescript/src:/ts-server/src
+    ports:
+      - 3000:3000
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=sample-app
+      - JWT_SECRET=my-secret-123

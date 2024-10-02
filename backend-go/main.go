@@ -35,13 +35,17 @@ func main() {
 		panic(err)
 	}
 
-	app, err := newrelic.NewApplication(
-		newrelic.ConfigAppName("sample-todo-app"),
-		newrelic.ConfigLicense(os.Getenv("NR_LICENSE")),
-		newrelic.ConfigAppLogForwardingEnabled(true),
-	)
-	if err != nil {
-		panic(err)
+	var app *newrelic.Application
+	nrLicense := os.Getenv("NR_LICENSE")
+	if len(nrLicense) == 40 { // NewRelic license length is 40
+		app, err = newrelic.NewApplication(
+			newrelic.ConfigAppName("sample-todo-app"),
+			newrelic.ConfigLicense(os.Getenv("NR_LICENSE")),
+			newrelic.ConfigAppLogForwardingEnabled(true),
+		)
+		if err != nil {
+			panic(err)
+		}
 	}
 	logger.InitLogging(app)
 
@@ -71,9 +75,15 @@ func main() {
 
 	// "public" routes
 	r.Group(func(r chi.Router) {
-		r.Get(newrelic.WrapHandleFunc(app, "/", handler.Hello))
-		r.Post(newrelic.WrapHandleFunc(app, "/user", handler.CreateAccount))
-		r.Post(newrelic.WrapHandleFunc(app, "/user/login", handler.LoginUser))
+		if app != nil {
+			r.Get(newrelic.WrapHandleFunc(app, "/", handler.Hello))
+			r.Post(newrelic.WrapHandleFunc(app, "/user", handler.CreateAccount))
+			r.Post(newrelic.WrapHandleFunc(app, "/user/login", handler.LoginUser))
+		} else {
+			r.Get("/", handler.Hello)
+			r.Post("/user", handler.CreateAccount)
+			r.Post("/user/login", handler.LoginUser)
+		}
 	})
 
 	// protected routes
@@ -82,12 +92,22 @@ func main() {
 		r.Use(jwtauth.Verifier(jwtTokenAuth))
 		r.Use(jwtauth.Authenticator(jwtTokenAuth))
 
-		r.Get(newrelic.WrapHandleFunc(app, "/user", handler.ValidateJWT))
-		r.Post(newrelic.WrapHandleFunc(app, "/todo", handler.InsertTodo))
-		r.Put(newrelic.WrapHandleFunc(app, "/todo/{todoID}", handler.UpdateTodo))
-		r.Get(newrelic.WrapHandleFunc(app, "/todo/{todoID}", handler.GetTodoByID))
-		r.Delete(newrelic.WrapHandleFunc(app, "/todo/{todoID}", handler.DeleteTodo))
-		r.Get(newrelic.WrapHandleFunc(app, "/user/todo", handler.GetTodosByUser))
+		if app != nil {
+			r.Get(newrelic.WrapHandleFunc(app, "/user", handler.ValidateJWT))
+			r.Post(newrelic.WrapHandleFunc(app, "/todo", handler.InsertTodo))
+			r.Put(newrelic.WrapHandleFunc(app, "/todo/{todoID}", handler.UpdateTodo))
+			r.Get(newrelic.WrapHandleFunc(app, "/todo/{todoID}", handler.GetTodoByID))
+			r.Delete(newrelic.WrapHandleFunc(app, "/todo/{todoID}", handler.DeleteTodo))
+			r.Get(newrelic.WrapHandleFunc(app, "/user/todo", handler.GetTodosByUser))
+
+		} else {
+			r.Get("/user", handler.ValidateJWT)
+			r.Post("/todo", handler.InsertTodo)
+			r.Put("/todo/{todoID}", handler.UpdateTodo)
+			r.Get("/todo/{todoID}", handler.GetTodoByID)
+			r.Delete("/todo/{todoID}", handler.DeleteTodo)
+			r.Get("/user/todo", handler.GetTodosByUser)
+		}
 	})
 
 	logger.Info("Listening on port 3000")
