@@ -14,8 +14,12 @@ var (
 )
 
 func InitLogging(app *newrelic.Application) {
-	instrumentedTextHandler := nrslog.TextHandler(app, os.Stdout, &slog.HandlerOptions{})
-	logger = slog.New(instrumentedTextHandler)
+	if app != nil {
+		instrumentedTextHandler := nrslog.TextHandler(app, os.Stdout, &slog.HandlerOptions{})
+		logger = slog.New(instrumentedTextHandler)
+	} else {
+		logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{}))
+	}
 }
 
 func Info(msg string, args ...any) {
